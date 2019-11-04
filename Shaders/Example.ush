@@ -1,0 +1,18 @@
+struct WaveFunction
+{
+    static const float Pi = 3.141592f;
+    static float Mod2Pi(float X)
+    {
+        return X - 2 * Pi * trunc(X / (2 * Pi));
+    }
+
+    static float2 Skew(float X, float R)
+    {
+        return X + R * pow(pow(Pi, 2) - pow(Mod2Pi(X) - Pi, 2), 0.8);
+    }
+};
+
+float T = dot(Dir, WorldPos.xy) - Time;
+float2 DeltaXY = (WaveFunction::Skew(A * B * sin(T), 0.3f)) * Dir;
+float DeltaZ = (A * cos(T) + A) / 2.f;
+return float3(DeltaXY, DeltaZ);
