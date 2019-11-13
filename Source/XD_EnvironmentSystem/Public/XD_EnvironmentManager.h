@@ -80,6 +80,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "游戏|环境系统")
 	float GetCloudsDensity(const FVector& Position) const { return CloudsDensity; }
 
+	// 雾
 public:
 	UFUNCTION(BlueprintCallable, Category = "游戏|环境系统")
 	float GetFogDensity(const FVector& Position) const { return Humidity; }
