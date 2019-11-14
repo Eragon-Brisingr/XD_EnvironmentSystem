@@ -3,14 +3,18 @@
 #include "XD_EnvironmentManager.h"
 #include <UnrealNetwork.h>
 #include <GameFramework/GameStateBase.h>
+#include <EngineUtils.h>
+#include <FXSystem.h>
+#include <Engine/ActorChannel.h>
+#include <Components/VectorFieldComponent.h>
+#include <VectorField/VectorFieldStatic.h>
+
 #include "XD_EnvironmentGameStateInterface.h"
 #include "XD_ActorFunctionLibrary.h"
 #include "XD_EnvironmentSystemUtility.h"
-#include <Engine/ActorChannel.h>
 #include "XD_EnvironmentSystemSettings.h"
 #include "XD_EnvironmentPreviewActor.h"
-#include <EngineUtils.h>
-#include "SubManager/XD_InsideManagerActor.h"
+#include "XD_InsideManagerActor.h"
 
 
 // Sets default values for this component's properties
@@ -216,6 +220,115 @@ UXD_EnvironmentManager* UXD_EnvironmentManager::GetManager(const UObject* WorldC
 		}
 	}
 	return nullptr;
+}
+
+FVector UXD_EnvironmentManager::GetWindVelocity(const FVector& Position) const 
+{
+	UWorld* World = GetWorld();
+	FFXSystemInterface* FXSystem = World->Scene->GetFXSystem();
+
+	return WindVelocity; 
+}
+
+bool UXD_EnvironmentManager::SampleVectorField(UVectorFieldComponent* VectorFieldComponent, const FVector& Position, FVector& OutVector)
+{
+	// TODO：边界外的过渡
+
+	if (UVectorFieldStatic* StaticVectorField = Cast<UVectorFieldStatic>(VectorFieldComponent->VectorField))
+	{
+		const FVector Location = VectorFieldComponent->GetComponentTransform().InverseTransformPosition(Position);
+
+		// UNiagaraDataInterfaceVectorField::SampleVectorField
+		if (StaticVectorField->Bounds.IsInside(Location))
+		{
+			check(StaticVectorField->bAllowCPUAccess);
+			const FVector4* Data = StaticVectorField->CPUData.GetData();
+
+			const uint32 SizeX = (uint32)StaticVectorField->SizeX;
+			const uint32 SizeY = (uint32)StaticVectorField->SizeY;
+			const uint32 SizeZ = (uint32)StaticVectorField->SizeZ;
+			const FVector4 Size(SizeX, SizeY, SizeZ, 1.0f);
+
+			const FVector4 MinBounds(StaticVectorField->Bounds.Min.X, StaticVectorField->Bounds.Min.Y, StaticVectorField->Bounds.Min.Z, 0.f);
+			const FVector BoundSize = StaticVectorField->Bounds.GetSize();
+			const FVector4 OneOverBoundSize(FVector::OneVector / BoundSize, 1.0f);
+
+			check(Data && FMath::Min3(SizeX, SizeY, SizeZ) > 0 && BoundSize.GetMin() > SMALL_NUMBER);
+
+			// Math helper
+			static auto FVector4Clamp = [](const FVector4& v, const FVector4& a, const FVector4& b) {
+				return FVector4(FMath::Clamp(v.X, a.X, b.X),
+					FMath::Clamp(v.Y, a.Y, b.Y),
+					FMath::Clamp(v.Z, a.Z, b.Z),
+					FMath::Clamp(v.W, a.W, b.W));
+			};
+
+			static auto FVector4Floor = [](const FVector4& v) {
+				return FVector4(FGenericPlatformMath::FloorToFloat(v.X),
+					FGenericPlatformMath::FloorToFloat(v.Y),
+					FGenericPlatformMath::FloorToFloat(v.Z),
+					FGenericPlatformMath::FloorToFloat(v.W));
+			};
+
+			// Position in Volume Space
+			FVector4 Pos(Location.X, Location.Y, Location.Z, 0.0f);
+			// Normalize position
+			Pos = (Pos - MinBounds) * OneOverBoundSize;
+			// Scaled position
+			Pos = Pos * Size;
+			// Offset by half a cell size due to sample being in the center of its cell
+			Pos = Pos - FVector4(0.5f, 0.5f, 0.5f, 0.0f);
+
+			// 
+			FVector4 Index0 = FVector4Floor(Pos);
+			FVector4 Index1 = Index0 + FVector4(1.0f, 1.0f, 1.0f, 0.0f);
+
+			Index1 = FVector4Clamp(Index1, FVector4(0.0f), Size - FVector4(1.0f, 1.0f, 1.0f, 0.0f));
+
+			// Sample by regular trilinear interpolation:
+
+			// TODO(mv): Optimize indexing for cache? Periodicity is problematic...
+			// TODO(mv): Vectorize?
+			// Fetch corners
+			FVector4 V000 = Data[int(Index0.X + SizeX * Index0.Y + SizeX * SizeY * Index0.Z)];
+			FVector4 V100 = Data[int(Index1.X + SizeX * Index0.Y + SizeX * SizeY * Index0.Z)];
+			FVector4 V010 = Data[int(Index0.X + SizeX * Index1.Y + SizeX * SizeY * Index0.Z)];
+			FVector4 V110 = Data[int(Index1.X + SizeX * Index1.Y + SizeX * SizeY * Index0.Z)];
+			FVector4 V001 = Data[int(Index0.X + SizeX * Index0.Y + SizeX * SizeY * Index1.Z)];
+			FVector4 V101 = Data[int(Index1.X + SizeX * Index0.Y + SizeX * SizeY * Index1.Z)];
+			FVector4 V011 = Data[int(Index0.X + SizeX * Index1.Y + SizeX * SizeY * Index1.Z)];
+			FVector4 V111 = Data[int(Index1.X + SizeX * Index1.Y + SizeX * SizeY * Index1.Z)];
+
+			// 
+			FVector4 Fraction = Pos - Index0;
+
+			// Blend x-axis
+			FVector4 V00 = FMath::Lerp(V000, V100, Fraction.X);
+			FVector4 V01 = FMath::Lerp(V001, V101, Fraction.X);
+			FVector4 V10 = FMath::Lerp(V010, V110, Fraction.X);
+			FVector4 V11 = FMath::Lerp(V011, V111, Fraction.X);
+
+			// Blend y-axis
+			FVector4 V0 = FMath::Lerp(V00, V10, Fraction.Y);
+			FVector4 V1 = FMath::Lerp(V01, V11, Fraction.Y);
+
+			// Blend z-axis
+			FVector4 V = FMath::Lerp(V0, V1, Fraction.Z);
+
+			// Write final output...
+			FVector Result = FVector(V.X, V.Y, V.Z);
+
+			OutVector = Result * VectorFieldComponent->Intensity;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+float UXD_EnvironmentManager::GetWindSpeed(const FVector& Position) const
+{
+	return GetWindVelocity(Position).Size();
 }
 
 class UWorld* UXD_EnvironmentSubManager::GetWorld() const

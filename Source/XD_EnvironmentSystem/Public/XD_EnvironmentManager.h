@@ -67,10 +67,13 @@ public:
 	FVector WindVelocity = FVector(1.f, 0.f, 0.f);
 
 	UFUNCTION(BlueprintCallable, Category = "游戏|环境系统")
-	FVector GetWindVelocity(const FVector& Position) const { return WindVelocity; }
+	FVector GetWindVelocity(const FVector& Position) const;
 	
 	UFUNCTION(BlueprintCallable, Category = "游戏|环境系统")
-	float GetWindSpeed(const FVector& Position) const { return WindVelocity.Size(); }
+	static bool SampleVectorField(UVectorFieldComponent* VectorFieldComponent, const FVector& Position, FVector& OutVector);
+
+	UFUNCTION(BlueprintCallable, Category = "游戏|环境系统")
+	float GetWindSpeed(const FVector& Position) const;
 
 	//云
 public:
