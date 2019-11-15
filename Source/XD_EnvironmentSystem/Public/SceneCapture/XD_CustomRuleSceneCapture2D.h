@@ -31,9 +31,9 @@ class XD_ENVIRONMENTSYSTEM_API UXD_SceneCaptureRuleBase : public UObject
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintNativeEvent, Category = "规则")
-	void ExecuteTheRule(class USceneCaptureComponent2D* SceneCapture2D, class AActor* Actor);
-	virtual void ExecuteTheRule_Implementation(class USceneCaptureComponent2D* SceneCapture2D, class AActor* Actor){}
+	virtual void ExecuteTheRule(class USceneCaptureComponent2D* SceneCapture2D, class AActor* Actor) { ReceiveExecuteTheRule(SceneCapture2D, Actor); }
+	UFUNCTION(BlueprintImplementableEvent, Category = "规则", meta = (DisplayName = "ExecuteTheRule"))
+	void ReceiveExecuteTheRule(class USceneCaptureComponent2D* SceneCapture2D, class AActor* Actor);
 };
 
 UCLASS()
@@ -46,5 +46,5 @@ public:
 	UPROPERTY(EditAnywhere, Category = "规则")
 	TArray<TEnumAsByte<ECollisionChannel>> ObjectTypes;
 
-	virtual void ExecuteTheRule_Implementation(class USceneCaptureComponent2D* SceneCapture2D, class AActor* Actor) override;
+	void ExecuteTheRule(class USceneCaptureComponent2D* SceneCapture2D, class AActor* Actor) override;
 };

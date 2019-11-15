@@ -42,6 +42,8 @@ public:
 
 	static UXD_EnvironmentManager* GetManager(const UObject* WorldContextObject);
 	
+	FDelegateHandle OnActorSpawnedHandle;
+
 	UPROPERTY(EditAnywhere, Category = "环境系统")
 	TArray<AActor*> SubManagerActors;
 
@@ -64,16 +66,14 @@ public:
 	// 风
 public:
 	UPROPERTY(EditAnywhere, Replicated, SaveGame, meta = (DisplayName = "风速"), Category = "环境系统")
-	FVector WindVelocity = FVector(1.f, 0.f, 0.f);
+	FVector GlobalWindVelocity = FVector(1.f, 0.f, 0.f);
 
-	UFUNCTION(BlueprintCallable, Category = "游戏|环境系统")
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "游戏|环境系统")
 	FVector GetWindVelocity(const FVector& Position) const;
-	
-	UFUNCTION(BlueprintCallable, Category = "游戏|环境系统")
-	static bool SampleVectorField(UVectorFieldComponent* VectorFieldComponent, const FVector& Position, FVector& OutVector);
+	static TOptional<FVector> SampleVectorField(class UVectorFieldComponent* VectorFieldComponent, const FVector& Position);
 
-	UFUNCTION(BlueprintCallable, Category = "游戏|环境系统")
-	float GetWindSpeed(const FVector& Position) const;
+	UPROPERTY(Transient)
+	TArray<UVectorFieldComponent*> WindVectorFields;
 
 	//云
 public:

@@ -38,15 +38,6 @@ FVector UXD_EnvironmentFunctionLibrary::GetWindVelocity(const UObject* WorldCont
 	return {};
 }
 
-float UXD_EnvironmentFunctionLibrary::GetWindSpeed(const UObject* WorldContextObject, const FVector& Position)
-{
-	if (UXD_EnvironmentManager* EnvironmentManager = GetEnvironmentManager(WorldContextObject))
-	{
-		return EnvironmentManager->GetWindSpeed(Position);
-	}
-	return {};
-}
-
 float UXD_EnvironmentFunctionLibrary::GetCloudsDensity(const UObject* WorldContextObject, const FVector& Position)
 {
 	if (UXD_EnvironmentManager* EnvironmentManager = GetEnvironmentManager(WorldContextObject))

@@ -50,7 +50,7 @@ UXD_SceneCaptureRule_ObjectType::UXD_SceneCaptureRule_ObjectType()
 	ObjectTypes.Add(ECollisionChannel::ECC_WorldStatic);
 }
 
-void UXD_SceneCaptureRule_ObjectType::ExecuteTheRule_Implementation(class USceneCaptureComponent2D* SceneCapture2D, class AActor* Actor)
+void UXD_SceneCaptureRule_ObjectType::ExecuteTheRule(class USceneCaptureComponent2D* SceneCapture2D, class AActor* Actor)
 {
 	for (UActorComponent* ActorComponent : Actor->GetComponents())
 	{
