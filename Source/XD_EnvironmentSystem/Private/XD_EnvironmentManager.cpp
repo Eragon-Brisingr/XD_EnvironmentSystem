@@ -126,8 +126,9 @@ void UXD_EnvironmentManager::OnRegister()
 
 	// TODO：创建自己的VectorFieldComponent用于向管理器注册、反注册和区分类型（风、洋流）
 	{
-		auto RegistVectorFieldComponent = [&](UVectorFieldComponent* VectorFieldComponent)
+		auto RegistVectorFieldVolume = [&](AVectorFieldVolume* VectorFieldVolume)
 		{
+			UVectorFieldComponent* VectorFieldComponent = VectorFieldVolume->GetVectorFieldComponent();
 			if (UVectorFieldStatic* StaticVectorField = Cast<UVectorFieldStatic>(VectorFieldComponent->VectorField))
 			{
 				const uint32 SizeX = (uint32)StaticVectorField->SizeX;
@@ -143,6 +144,7 @@ void UXD_EnvironmentManager::OnRegister()
 				{
 					check(StaticVectorField->CPUData.GetData() != nullptr && FMath::Min3(SizeX, SizeY, SizeZ) > 0 && BoundSize.GetMin() > SMALL_NUMBER);
 					WindVectorFields.Add(VectorFieldComponent);
+					VectorFieldVolume->OnDestroyed.AddDynamic(this, &UXD_EnvironmentManager::WhenVectorFieldDestroyed);
 				}
 			}
 		};
@@ -151,14 +153,14 @@ void UXD_EnvironmentManager::OnRegister()
 			AVectorFieldVolume* VectorFieldVolume = *It;
 			if (!VectorFieldVolume->IsPendingKill())
 			{
-				RegistVectorFieldComponent(VectorFieldVolume->GetVectorFieldComponent());
+				RegistVectorFieldVolume(VectorFieldVolume);
 			}
 		}
 		OnActorSpawnedHandle = GetWorld()->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateLambda([=](AActor* Actor)
 			{
 				if (AVectorFieldVolume* VectorFieldVolume = Cast<AVectorFieldVolume>(Actor))
 				{
-					RegistVectorFieldComponent(VectorFieldVolume->GetVectorFieldComponent());
+					RegistVectorFieldVolume(VectorFieldVolume);
 				}
 			}));
 	}
@@ -368,6 +370,12 @@ TOptional<FVector> UXD_EnvironmentManager::SampleVectorField(UVectorFieldCompone
 	}
 
 	return TOptional<FVector>();
+}
+
+void UXD_EnvironmentManager::WhenVectorFieldDestroyed(AActor* VectorField)
+{
+	AVectorFieldVolume* VectorFieldVolume = CastChecked<AVectorFieldVolume>(VectorField);
+	WindVectorFields.Remove(VectorFieldVolume->GetVectorFieldComponent());
 }
 
 class UWorld* UXD_EnvironmentSubManager::GetWorld() const

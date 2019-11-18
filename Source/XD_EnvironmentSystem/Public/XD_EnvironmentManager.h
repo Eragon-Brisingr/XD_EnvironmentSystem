@@ -69,11 +69,13 @@ public:
 	FVector GlobalWindVelocity = FVector(1.f, 0.f, 0.f);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "游戏|环境系统")
-	FVector GetWindVelocity(const FVector& Position) const;
+	virtual FVector GetWindVelocity(const FVector& Position) const;
 	static TOptional<FVector> SampleVectorField(class UVectorFieldComponent* VectorFieldComponent, const FVector& Position);
 
 	UPROPERTY(Transient)
 	TArray<UVectorFieldComponent*> WindVectorFields;
+	UFUNCTION()
+	void WhenVectorFieldDestroyed(AActor* VectorField);
 
 	//云
 public:
