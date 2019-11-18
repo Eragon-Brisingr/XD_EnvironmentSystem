@@ -144,7 +144,7 @@ void UXD_EnvironmentManager::OnRegister()
 				{
 					check(StaticVectorField->CPUData.GetData() != nullptr && FMath::Min3(SizeX, SizeY, SizeZ) > 0 && BoundSize.GetMin() > SMALL_NUMBER);
 					WindVectorFields.Add(VectorFieldComponent);
-					VectorFieldVolume->OnDestroyed.AddDynamic(this, &UXD_EnvironmentManager::WhenVectorFieldDestroyed);
+					VectorFieldVolume->OnDestroyed.AddUniqueDynamic(this, &UXD_EnvironmentManager::WhenVectorFieldDestroyed);
 				}
 			}
 		};
