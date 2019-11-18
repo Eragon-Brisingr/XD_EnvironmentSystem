@@ -66,7 +66,7 @@ public:
 	// 风
 public:
 	UPROPERTY(EditAnywhere, Replicated, SaveGame, meta = (DisplayName = "风速"), Category = "环境系统")
-	FVector GlobalWindVelocity = FVector(1.f, 0.f, 0.f);
+	float GlobalWindSpeed = 10.f;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "游戏|环境系统")
 	virtual FVector GetWindVelocity(const FVector& Position) const;
@@ -77,6 +77,7 @@ public:
 	UFUNCTION()
 	void WhenVectorFieldDestroyed(AActor* VectorField);
 
+	void SetGlobalWindSpeed(float InWindSpeed);
 	//云
 public:
 	UPROPERTY(EditAnywhere, Replicated, SaveGame, meta = (DisplayName = "云密度", ClampMin = "0", ClampMax = "1"), Category = "环境系统")
