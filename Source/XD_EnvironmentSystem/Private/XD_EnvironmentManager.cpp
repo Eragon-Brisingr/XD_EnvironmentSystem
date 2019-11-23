@@ -284,8 +284,12 @@ FVector UXD_EnvironmentManager::GetWindVelocity(const FVector& Position) const
 	return WindVelocity;
 }
 
+DECLARE_CYCLE_STAT(TEXT("SampleVectorField"), STAT_SampleVectorField, STATGROUP_ENVIRONMENTSYSTEM);
+
 TOptional<FVector> UXD_EnvironmentManager::SampleVectorField(UVectorFieldComponent* VectorFieldComponent, const FVector& Position)
 {
+	SCOPE_CYCLE_COUNTER(STAT_SampleVectorField);
+
 	// TODO：边界外的过渡
 	UVectorFieldStatic* StaticVectorField = CastChecked<UVectorFieldStatic>(VectorFieldComponent->VectorField);
 	const FVector Location = VectorFieldComponent->GetComponentTransform().InverseTransformPosition(Position);
