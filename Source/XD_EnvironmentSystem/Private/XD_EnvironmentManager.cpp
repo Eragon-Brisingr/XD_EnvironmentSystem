@@ -9,6 +9,7 @@
 #include <Components/VectorFieldComponent.h>
 #include <VectorField/VectorFieldStatic.h>
 #include <VectorField/VectorFieldVolume.h>
+#include <Components/WindDirectionalSourceComponent.h>
 
 #include "XD_EnvironmentGameStateInterface.h"
 #include "XD_ActorFunctionLibrary.h"
@@ -165,6 +166,14 @@ void UXD_EnvironmentManager::OnRegister()
 				}
 			}));
 	}
+
+	// 临时创建风组件用于影响布料效果，最优方案是修改FScene::GetWindParameters_GameThread
+	{
+		AActor* Owner = GetOwner();
+		WindDirectionalSourceComponent = NewObject<UWindDirectionalSourceComponent>(Owner, GET_MEMBER_NAME_CHECKED(UXD_EnvironmentManager, WindDirectionalSourceComponent));
+		Owner->AddOwnedComponent(WindDirectionalSourceComponent);
+		WindDirectionalSourceComponent->RegisterComponent();
+	}
 }
 
 void UXD_EnvironmentManager::OnUnregister()
@@ -189,6 +198,11 @@ void UXD_EnvironmentManager::TickComponent(float DeltaTime, ELevelTick TickType,
 				SubManager->ReceiveTick(DeltaTime);
 			}
 		}
+	}
+
+	{
+		WindDirectionalSourceComponent->SetSpeed(GetGlobalWindSpeed() / 500.f);
+		WindDirectionalSourceComponent->SetWorldRotation(GlobalWindVelocity.Rotation());
 	}
 }
 
@@ -388,7 +402,7 @@ void UXD_EnvironmentManager::WhenVectorFieldDestroyed(AActor* VectorField)
 
 void UXD_EnvironmentManager::SetGlobalWindSpeed(float InWindSpeed)
 {
-	if (InWindSpeed != GetGlobalWindSpeed())
+	if (ensure(InWindSpeed != 0.f) && InWindSpeed != GetGlobalWindSpeed())
 	{
 		GlobalWindVelocity = GlobalWindVelocity.GetSafeNormal() * InWindSpeed;
 		for (UVectorFieldComponent* WindVectorField : WindVectorFields)

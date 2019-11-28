@@ -93,6 +93,9 @@ public:
 	UFUNCTION()
 	void WhenVectorFieldDestroyed(AActor* VectorField);
 
+	UPROPERTY(Transient)
+	class UWindDirectionalSourceComponent* WindDirectionalSourceComponent;
+
 	float GetGlobalWindSpeed() const { return GlobalWindVelocity.Size(); }
 	void SetGlobalWindSpeed(float InWindSpeed);
 
