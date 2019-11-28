@@ -144,7 +144,7 @@ void UXD_EnvironmentManager::OnRegister()
 				{
 					check(StaticVectorField->CPUData.GetData() != nullptr && FMath::Min3(SizeX, SizeY, SizeZ) > 0 && BoundSize.GetMin() > SMALL_NUMBER);
 					WindVectorFields.Add(VectorFieldComponent);
-					VectorFieldComponent->SetIntensity(GlobalWindSpeed);
+					VectorFieldComponent->SetIntensity(GetWindFieldIntensity());
 					VectorFieldVolume->OnDestroyed.AddUniqueDynamic(this, &UXD_EnvironmentManager::WhenVectorFieldDestroyed);
 				}
 			}
@@ -198,7 +198,7 @@ void UXD_EnvironmentManager::GetLifetimeReplicatedProps(TArray< class FLifetimeP
 
 	DOREPLIFETIME(UXD_EnvironmentManager, Humidity);
 	DOREPLIFETIME(UXD_EnvironmentManager, Temperature);
-	DOREPLIFETIME(UXD_EnvironmentManager, GlobalWindSpeed);
+	DOREPLIFETIME(UXD_EnvironmentManager, GlobalWindVelocity);
 	DOREPLIFETIME(UXD_EnvironmentManager, CloudsDensity);
 }
 
@@ -269,6 +269,8 @@ UXD_EnvironmentManager* UXD_EnvironmentManager::GetManager(const UObject* WorldC
 
 FVector UXD_EnvironmentManager::GetWindVelocity(const FVector& Position) const 
 {
+	bool ContainWindField = false;
+
 	FVector WindVelocity = FVector::ZeroVector;
 	for (UVectorFieldComponent* WindVectorField : WindVectorFields)
 	{
@@ -277,11 +279,12 @@ FVector UXD_EnvironmentManager::GetWindVelocity(const FVector& Position) const
 			TOptional<FVector> Velocity = SampleVectorField(WindVectorField, Position);
 			if (Velocity)
 			{
+				ContainWindField = true;
 				WindVelocity += Velocity.GetValue();
 			}
 		}
 	}
-	return WindVelocity;
+	return ContainWindField ? WindVelocity : GlobalWindVelocity;
 }
 
 DECLARE_CYCLE_STAT(TEXT("SampleVectorField"), STAT_SampleVectorField, STATGROUP_ENVIRONMENTSYSTEM);
@@ -385,14 +388,14 @@ void UXD_EnvironmentManager::WhenVectorFieldDestroyed(AActor* VectorField)
 
 void UXD_EnvironmentManager::SetGlobalWindSpeed(float InWindSpeed)
 {
-	if (InWindSpeed != GlobalWindSpeed)
+	if (InWindSpeed != GetGlobalWindSpeed())
 	{
-		GlobalWindSpeed = InWindSpeed;
+		GlobalWindVelocity = GlobalWindVelocity.GetSafeNormal() * InWindSpeed;
 		for (UVectorFieldComponent* WindVectorField : WindVectorFields)
 		{
 			if (WindVectorField)
 			{
-				WindVectorField->SetIntensity(InWindSpeed);
+				WindVectorField->SetIntensity(GetWindFieldIntensity());
 			}
 		}
 	}
