@@ -8,7 +8,7 @@
 #include "XD_EnvironmentManager.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent = false))
 class XD_ENVIRONMENTSYSTEM_API UXD_EnvironmentManager : public UActorComponent, public IXD_SaveGameInterface
 {
 	GENERATED_BODY()
@@ -84,6 +84,12 @@ public:
 	*/
 	UPROPERTY(EditAnywhere, Replicated, SaveGame, meta = (DisplayName = "风速"), Category = "环境系统")
 	FVector GlobalWindVelocity = FVector(0.f, 300.f, 0.f);
+
+	// TODO：实现阵风吹过效果，从远到近的效果
+	UPROPERTY(VisibleAnywhere, Replicated, SaveGame, meta = (DisplayName = "阵风强度"))
+	float GustScale = 1.f;
+	UPROPERTY(SaveGame)
+	float GustUpdateRemainTime = 20.f;
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "游戏|环境系统")
 	virtual FVector GetWindVelocity(const FVector& Position) const;
 	static TOptional<FVector> SampleVectorField(class UVectorFieldComponent* VectorFieldComponent, const FVector& Position);
@@ -96,7 +102,7 @@ public:
 	UPROPERTY(Transient)
 	class UWindDirectionalSourceComponent* WindDirectionalSourceComponent;
 
-	float GetGlobalWindSpeed() const { return GlobalWindVelocity.Size(); }
+	float GetGlobalWindSpeed() const { return GlobalWindVelocity.Size() * GustScale; }
 	void SetGlobalWindSpeed(float InWindSpeed);
 
 	float GetWindFieldIntensity() const { return GetGlobalWindSpeed() / 20.f; }

@@ -200,9 +200,32 @@ void UXD_EnvironmentManager::TickComponent(float DeltaTime, ELevelTick TickType,
 		}
 	}
 
+	// 风相关的计算
 	{
-		WindDirectionalSourceComponent->SetSpeed(GetGlobalWindSpeed() / 500.f);
-		WindDirectionalSourceComponent->SetWorldRotation(GlobalWindVelocity.Rotation());
+		if (GetOwner()->HasAuthority())
+		{
+			GustUpdateRemainTime -= DeltaTime;
+			if (GustUpdateRemainTime <= 0.f)
+			{
+				GustUpdateRemainTime = FMath::RandRange(15.f, 30.f);
+				GustScale = FMath::RandRange(1.3f, 1.5f);
+			}
+			if (GustScale > 1.f)
+			{
+				GustScale = FMath::FInterpTo(GustScale, 1.f, DeltaTime, 1.f);
+			}
+
+			WindDirectionalSourceComponent->SetSpeed(GetGlobalWindSpeed() / 500.f);
+			WindDirectionalSourceComponent->SetWorldRotation(GlobalWindVelocity.Rotation());
+		}
+
+		for (UVectorFieldComponent* WindVectorField : WindVectorFields)
+		{
+			if (WindVectorField)
+			{
+				WindVectorField->SetIntensity(GetWindFieldIntensity());
+			}
+		}
 	}
 }
 
@@ -213,6 +236,7 @@ void UXD_EnvironmentManager::GetLifetimeReplicatedProps(TArray< class FLifetimeP
 	DOREPLIFETIME(UXD_EnvironmentManager, Humidity);
 	DOREPLIFETIME(UXD_EnvironmentManager, Temperature);
 	DOREPLIFETIME(UXD_EnvironmentManager, GlobalWindVelocity);
+	DOREPLIFETIME(UXD_EnvironmentManager, GustScale);
 	DOREPLIFETIME(UXD_EnvironmentManager, CloudsDensity);
 }
 
@@ -285,7 +309,8 @@ FVector UXD_EnvironmentManager::GetWindVelocity(const FVector& Position) const
 {
 	bool ContainWindField = false;
 
-	FVector WindVelocity = FVector::ZeroVector;
+	// 风场的强度已经计算了GustScale，不需要再算了
+	FVector WindFieldVelocity = FVector::ZeroVector;
 	for (UVectorFieldComponent* WindVectorField : WindVectorFields)
 	{
 		if (WindVectorField)
@@ -294,11 +319,11 @@ FVector UXD_EnvironmentManager::GetWindVelocity(const FVector& Position) const
 			if (Velocity)
 			{
 				ContainWindField = true;
-				WindVelocity += Velocity.GetValue();
+				WindFieldVelocity += Velocity.GetValue();
 			}
 		}
 	}
-	return ContainWindField ? WindVelocity : GlobalWindVelocity;
+	return ContainWindField ? WindFieldVelocity : GlobalWindVelocity * GustScale;
 }
 
 DECLARE_CYCLE_STAT(TEXT("SampleVectorField"), STAT_SampleVectorField, STATGROUP_ENVIRONMENTSYSTEM);
@@ -402,7 +427,7 @@ void UXD_EnvironmentManager::WhenVectorFieldDestroyed(AActor* VectorField)
 
 void UXD_EnvironmentManager::SetGlobalWindSpeed(float InWindSpeed)
 {
-	if (ensure(InWindSpeed != 0.f) && InWindSpeed != GetGlobalWindSpeed())
+	if (ensure(InWindSpeed != 0.f) && InWindSpeed != GlobalWindVelocity.Size())
 	{
 		GlobalWindVelocity = GlobalWindVelocity.GetSafeNormal() * InWindSpeed;
 		for (UVectorFieldComponent* WindVectorField : WindVectorFields)
