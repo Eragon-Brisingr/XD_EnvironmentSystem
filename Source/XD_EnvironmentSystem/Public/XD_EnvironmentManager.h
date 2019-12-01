@@ -83,18 +83,18 @@ public:
 		| 12       | 飓风     | 32.7~36.9   | 118~133      | 海浪滔天                            | 陆上绝少，其摧毁力极大                     | 非凡现象 |
 	*/
 	UPROPERTY(EditAnywhere, Replicated, SaveGame, Category = "环境系统", meta = (DisplayName = "风速"))
-	FVector GlobalWindVelocity = FVector(0.f, 300.f, 0.f);
+	FVector GlobalWindVelocity = FVector(0.f, 500.f, 0.f);
 	
 	// TODO：区域性阵风，和游戏玩法关联
 	// TODO：实现阵风吹过效果，从远到近的效果
 	UPROPERTY(VisibleAnywhere, Replicated, SaveGame, Category = "环境系统", meta = (DisplayName = "阵风风速"))
 	float GustSpeed = 0.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "环境系统", meta = (DisplayName = "最小阵风风速"))
-	float MinGustSpeed = 600.f;
+	float MinGustSpeed = 1000.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "环境系统", meta = (DisplayName = "最大阵风风速"))
-	float MaxGustSpeed = 1000.f;
+	float MaxGustSpeed = 1500.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "环境系统", meta = (DisplayName = "阵风持续时间"))
-	float GustDurationTime = 2.f;
+	float GustDurationTime = 3.f;
 	UPROPERTY(SaveGame, Replicated)
 	float TargetGustSpeed = 0.f;
 	UPROPERTY(SaveGame)
@@ -114,6 +114,7 @@ public:
 	UPROPERTY(Transient)
 	class UWindDirectionalSourceComponent* WindDirectionalSourceComponent;
 
+	FVector GetGlobalWindVelocity() const { return GlobalWindVelocity.GetSafeNormal() * GetGlobalWindSpeed(); }
 	float GetGlobalWindSpeed() const { return GlobalWindVelocity.Size() + GustSpeed; }
 	void SetGlobalWindSpeed(float InWindSpeed);
 

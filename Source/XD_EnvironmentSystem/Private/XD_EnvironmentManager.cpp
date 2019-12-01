@@ -332,7 +332,7 @@ FVector UXD_EnvironmentManager::GetWindVelocity(const FVector& Position) const
 			}
 		}
 	}
-	return ContainWindField ? WindFieldVelocity : GlobalWindVelocity + GustSpeed;
+	return ContainWindField ? WindFieldVelocity : GetGlobalWindVelocity();
 }
 
 DECLARE_CYCLE_STAT(TEXT("SampleVectorField"), STAT_SampleVectorField, STATGROUP_ENVIRONMENTSYSTEM);
