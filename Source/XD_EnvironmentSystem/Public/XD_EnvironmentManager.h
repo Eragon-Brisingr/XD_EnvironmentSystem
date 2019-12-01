@@ -82,14 +82,26 @@ public:
 		| 11       | 暴风     | 28.5~32.6   | 103~117      | 汽船遇之极危险                      | 陆上很少，有则必有重大损毁                 | 非凡现象 |
 		| 12       | 飓风     | 32.7~36.9   | 118~133      | 海浪滔天                            | 陆上绝少，其摧毁力极大                     | 非凡现象 |
 	*/
-	UPROPERTY(EditAnywhere, Replicated, SaveGame, meta = (DisplayName = "风速"), Category = "环境系统")
+	UPROPERTY(EditAnywhere, Replicated, SaveGame, Category = "环境系统", meta = (DisplayName = "风速"))
 	FVector GlobalWindVelocity = FVector(0.f, 300.f, 0.f);
-
+	
+	// TODO：区域性阵风，和游戏玩法关联
 	// TODO：实现阵风吹过效果，从远到近的效果
-	UPROPERTY(VisibleAnywhere, Replicated, SaveGame, meta = (DisplayName = "阵风强度"))
-	float GustScale = 1.f;
+	UPROPERTY(VisibleAnywhere, Replicated, SaveGame, Category = "环境系统", meta = (DisplayName = "阵风风速"))
+	float GustSpeed = 0.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "环境系统", meta = (DisplayName = "最小阵风风速"))
+	float MinGustSpeed = 600.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "环境系统", meta = (DisplayName = "最大阵风风速"))
+	float MaxGustSpeed = 1000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "环境系统", meta = (DisplayName = "阵风持续时间"))
+	float GustDurationTime = 2.f;
+	UPROPERTY(SaveGame, Replicated)
+	float TargetGustSpeed = 0.f;
+	UPROPERTY(SaveGame)
+	float GustDurationRemainTime = 0.f;
 	UPROPERTY(SaveGame)
 	float GustUpdateRemainTime = 20.f;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "游戏|环境系统")
 	virtual FVector GetWindVelocity(const FVector& Position) const;
 	static TOptional<FVector> SampleVectorField(class UVectorFieldComponent* VectorFieldComponent, const FVector& Position);
@@ -102,7 +114,7 @@ public:
 	UPROPERTY(Transient)
 	class UWindDirectionalSourceComponent* WindDirectionalSourceComponent;
 
-	float GetGlobalWindSpeed() const { return GlobalWindVelocity.Size() * GustScale; }
+	float GetGlobalWindSpeed() const { return GlobalWindVelocity.Size() + GustSpeed; }
 	void SetGlobalWindSpeed(float InWindSpeed);
 
 	float GetWindFieldIntensity() const { return GetGlobalWindSpeed() / 20.f; }

@@ -208,17 +208,25 @@ void UXD_EnvironmentManager::TickComponent(float DeltaTime, ELevelTick TickType,
 			if (GustUpdateRemainTime <= 0.f)
 			{
 				GustUpdateRemainTime = FMath::RandRange(15.f, 30.f);
-				GustScale = FMath::RandRange(1.3f, 1.5f);
+				TargetGustSpeed = FMath::RandRange(MinGustSpeed, MaxGustSpeed);
+				GustDurationRemainTime = GustDurationTime;
 			}
-			if (GustScale > 1.f)
+			if (GustDurationRemainTime > 0.f)
 			{
-				GustScale = FMath::FInterpTo(GustScale, 1.f, DeltaTime, 1.f);
+				GustDurationRemainTime -= DeltaTime;
+				if (GustDurationRemainTime <= 0.f)
+				{
+					TargetGustSpeed = 0.f;
+				}
 			}
-
-			WindDirectionalSourceComponent->SetSpeed(GetGlobalWindSpeed() / 500.f);
-			WindDirectionalSourceComponent->SetWorldRotation(GlobalWindVelocity.Rotation());
+		}
+		if (GustSpeed != TargetGustSpeed)
+		{
+			GustSpeed = FMath::FInterpTo(GustSpeed, TargetGustSpeed, DeltaTime, GustSpeed < TargetGustSpeed ? 10.f : 1.f);
 		}
 
+		WindDirectionalSourceComponent->SetSpeed(GetGlobalWindSpeed() / 500.f);
+		WindDirectionalSourceComponent->SetWorldRotation(GlobalWindVelocity.Rotation());
 		for (UVectorFieldComponent* WindVectorField : WindVectorFields)
 		{
 			if (WindVectorField)
@@ -236,7 +244,8 @@ void UXD_EnvironmentManager::GetLifetimeReplicatedProps(TArray< class FLifetimeP
 	DOREPLIFETIME(UXD_EnvironmentManager, Humidity);
 	DOREPLIFETIME(UXD_EnvironmentManager, Temperature);
 	DOREPLIFETIME(UXD_EnvironmentManager, GlobalWindVelocity);
-	DOREPLIFETIME(UXD_EnvironmentManager, GustScale);
+	DOREPLIFETIME_CONDITION(UXD_EnvironmentManager, GustSpeed, COND_InitialOnly);
+	DOREPLIFETIME(UXD_EnvironmentManager, TargetGustSpeed);
 	DOREPLIFETIME(UXD_EnvironmentManager, CloudsDensity);
 }
 
@@ -323,7 +332,7 @@ FVector UXD_EnvironmentManager::GetWindVelocity(const FVector& Position) const
 			}
 		}
 	}
-	return ContainWindField ? WindFieldVelocity : GlobalWindVelocity * GustScale;
+	return ContainWindField ? WindFieldVelocity : GlobalWindVelocity + GustSpeed;
 }
 
 DECLARE_CYCLE_STAT(TEXT("SampleVectorField"), STAT_SampleVectorField, STATGROUP_ENVIRONMENTSYSTEM);
@@ -378,6 +387,7 @@ TOptional<FVector> UXD_EnvironmentManager::SampleVectorField(UVectorFieldCompone
 		FVector4 Index0 = FVector4Floor(Pos);
 		FVector4 Index1 = Index0 + FVector4(1.0f, 1.0f, 1.0f, 0.0f);
 
+		Index0 = FVector4Clamp(Index0, FVector4(0.0f), Size - FVector4(1.0f, 1.0f, 1.0f, 0.0f));
 		Index1 = FVector4Clamp(Index1, FVector4(0.0f), Size - FVector4(1.0f, 1.0f, 1.0f, 0.0f));
 
 		// Sample by regular trilinear interpolation:
