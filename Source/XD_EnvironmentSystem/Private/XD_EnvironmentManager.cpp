@@ -27,7 +27,7 @@ UXD_EnvironmentManager::UXD_EnvironmentManager()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-	SetIsReplicated(true);
+	SetIsReplicatedByDefault(true);
 }
 
 
