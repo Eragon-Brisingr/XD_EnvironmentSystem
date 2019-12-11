@@ -1,9 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "XD_ParticleCircleInBox.h"
-
-
-
+#include "ParticleModule/XD_ParticleCircleInBox.h"
 
 UXD_ParticleCircleInBox::UXD_ParticleCircleInBox()
 {

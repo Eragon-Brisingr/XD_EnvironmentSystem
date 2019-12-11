@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include <Components/ActorComponent.h>
 #include "XD_EnvironmentPhysicsComponent.generated.h"
 
 class UXD_EnvironmentManager;

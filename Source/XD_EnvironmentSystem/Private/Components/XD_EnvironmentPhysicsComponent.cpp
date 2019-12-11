@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "XD_EnvironmentPhysicsComponent.h"
+#include "Components/XD_EnvironmentPhysicsComponent.h"
 #include "XD_EnvironmentManager.h"
 #include "XD_EnvironmentSystemUtility.h"
 

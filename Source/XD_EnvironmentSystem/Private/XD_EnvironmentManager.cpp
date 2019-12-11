@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "XD_EnvironmentManager.h"
-#include <UnrealNetwork.h>
+#include <Net/UnrealNetwork.h>
 #include <GameFramework/GameStateBase.h>
 #include <EngineUtils.h>
 #include <FXSystem.h>
@@ -16,7 +16,7 @@
 #include "XD_EnvironmentSystemUtility.h"
 #include "XD_EnvironmentSystemSettings.h"
 #include "XD_EnvironmentPreviewActor.h"
-#include "XD_InsideManagerActor.h"
+#include "SubManager/XD_InsideManagerActor.h"
 
 
 // Sets default values for this component's properties

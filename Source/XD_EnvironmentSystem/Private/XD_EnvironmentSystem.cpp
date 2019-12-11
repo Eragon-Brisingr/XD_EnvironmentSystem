@@ -6,8 +6,8 @@
 #include <ISettingsSection.h>
 #include "XD_EnvironmentSystemSettings.h"
 #endif
-#include "IPluginManager.h"
-#include "ShaderCore.h"
+#include <Interfaces/IPluginManager.h>
+#include <ShaderCore.h>
 
 #define LOCTEXT_NAMESPACE "FXD_EnvironmentSystemModule"
 

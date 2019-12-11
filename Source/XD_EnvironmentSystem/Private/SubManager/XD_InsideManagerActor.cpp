@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "XD_InsideManagerActor.h"
+#include "SubManager/XD_InsideManagerActor.h"
 
 
 // Sets default values

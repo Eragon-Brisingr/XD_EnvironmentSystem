@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "XD_SubManagerActorBase.h"
+#include "SubManager/XD_SubManagerActorBase.h"
 #include "XD_InsideManagerActor.generated.h"
 
 UCLASS()

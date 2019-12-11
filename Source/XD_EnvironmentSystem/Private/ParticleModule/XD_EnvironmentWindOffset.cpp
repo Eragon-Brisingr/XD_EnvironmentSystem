@@ -1,11 +1,11 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "XD_EnvironmentWindOffset.h"
+#include "ParticleModule/XD_EnvironmentWindOffset.h"
 #include <Distributions/DistributionFloatUniform.h>
 #include <ParticleEmitterInstances.h>
 #include <Particles/ParticleEmitter.h>
-#include "XD_EnvironmentManager.h"
 #include <Particles/ParticleSystemComponent.h>
+#include "XD_EnvironmentManager.h"
 
 
 
