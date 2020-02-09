@@ -244,7 +244,7 @@ void UXD_EnvironmentManager::GetLifetimeReplicatedProps(TArray< class FLifetimeP
 	DOREPLIFETIME(UXD_EnvironmentManager, Humidity);
 	DOREPLIFETIME(UXD_EnvironmentManager, Temperature);
 	DOREPLIFETIME(UXD_EnvironmentManager, GlobalWindVelocity);
-	DOREPLIFETIME_CONDITION(UXD_EnvironmentManager, GustSpeed, COND_InitialOnly);
+	DOREPLIFETIME(UXD_EnvironmentManager, GustSpeed);
 	DOREPLIFETIME(UXD_EnvironmentManager, TargetGustSpeed);
 	DOREPLIFETIME(UXD_EnvironmentManager, CloudsDensity);
 }
