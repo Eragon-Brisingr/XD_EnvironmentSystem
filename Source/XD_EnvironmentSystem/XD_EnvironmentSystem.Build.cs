@@ -42,7 +42,7 @@ public class XD_EnvironmentSystem : ModuleRules
                 "Projects",
 
                 "XD_UnrealLibraryEx",
-                "XD_SaveGameSystem",
+				"GameSerializer",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

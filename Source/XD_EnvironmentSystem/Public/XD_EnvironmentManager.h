@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include <Components/ActorComponent.h>
-#include "XD_SaveGameInterface.h"
+#include "GameSerializerInterface.h"
 #include "XD_EnvironmentManager.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent = false))
-class XD_ENVIRONMENTSYSTEM_API UXD_EnvironmentManager : public UActorComponent, public IXD_SaveGameInterface
+class XD_ENVIRONMENTSYSTEM_API UXD_EnvironmentManager : public UActorComponent, public IComponentGameSerializerInterface
 {
 	GENERATED_BODY()
 
