@@ -12,7 +12,6 @@
 #include <Components/WindDirectionalSourceComponent.h>
 
 #include "XD_EnvironmentGameStateInterface.h"
-#include "XD_ActorFunctionLibrary.h"
 #include "XD_EnvironmentSystemUtility.h"
 #include "XD_EnvironmentSystemSettings.h"
 #include "XD_EnvironmentPreviewActor.h"
@@ -308,7 +307,10 @@ UXD_EnvironmentManager* UXD_EnvironmentManager::GetManager(const UObject* WorldC
 		}
 		else
 		{
-			return UXD_ActorFunctionLibrary::AddComponent<UXD_EnvironmentManager>(GameState);
+			EnvironmentManager = NewObject<UXD_EnvironmentManager>(GameState);
+			GameState->AddOwnedComponent(EnvironmentManager);
+			EnvironmentManager->RegisterComponent();
+			return EnvironmentManager;
 		}
 	}
 	return nullptr;

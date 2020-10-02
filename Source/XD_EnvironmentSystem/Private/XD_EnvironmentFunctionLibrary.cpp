@@ -1,9 +1,15 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "XD_EnvironmentFunctionLibrary.h"
+#if WITH_EDITOR
+#include <LevelEditorViewport.h>
+#include <Editor/EditorEngine.h>
+#include <Editor.h>
+#endif
+#include <Kismet/GameplayStatics.h>
+#include <Camera/PlayerCameraManager.h>
+
 #include "XD_EnvironmentManager.h"
-
-
 
 
 class UXD_EnvironmentManager* UXD_EnvironmentFunctionLibrary::GetEnvironmentManager(const UObject* WorldContextObject)
@@ -73,3 +79,46 @@ float UXD_EnvironmentFunctionLibrary::GetSnowfall(const UObject* WorldContextObj
 	}
 	return {};
 }
+
+FVector UXD_EnvironmentFunctionLibrary::GetCameraLocation(const UObject* WorldContextObject)
+{
+#if WITH_EDITOR
+	if (UWorld* World = WorldContextObject->GetWorld())
+	{
+		if (!World->IsGameWorld() || GEditor->bIsSimulatingInEditor)
+		{
+			if (FLevelEditorViewportClient* client = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient()))
+			{
+				return client->GetViewLocation();
+			}
+		}
+	}
+#endif
+	if (APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(WorldContextObject, 0))
+	{
+		return CameraManager->GetCameraLocation();
+	}
+	return FVector::ZeroVector;
+}
+
+FRotator UXD_EnvironmentFunctionLibrary::GetCameraRotation(const UObject* WorldContextObject)
+{
+#if WITH_EDITOR
+	if (UWorld* World = WorldContextObject->GetWorld())
+	{
+		if (!World->IsGameWorld() || GEditor->bIsSimulatingInEditor)
+		{
+			if (FLevelEditorViewportClient* Client = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient()))
+			{
+				return Client->GetViewRotation();
+			}
+		}
+	}
+#endif
+	if (APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(WorldContextObject, 0))
+	{
+		return CameraManager->GetCameraRotation();
+	}
+	return FRotator::ZeroRotator;
+}
+

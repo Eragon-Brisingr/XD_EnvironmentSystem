@@ -41,13 +41,18 @@ public class XD_EnvironmentSystem : ModuleRules
                 "RenderCore",
                 "Projects",
 
-                "XD_UnrealLibraryEx",
 				"GameSerializer",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
-		
-		
+
+		if (Target.Type == TargetType.Editor)
+		{
+			PrivateDependencyModuleNames.AddRange(new string[] {
+				"UnrealEd",
+			});
+		}
+
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]
 			{

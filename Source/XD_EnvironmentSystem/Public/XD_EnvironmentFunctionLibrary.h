@@ -39,4 +39,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "游戏|环境系统", meta = (WorldContext = "WorldContextObject"))
 	static float GetSnowfall(const UObject* WorldContextObject, const FVector& Position);
 
+	//获取当前激活的摄像机的位置，包括编辑器下
+	UFUNCTION(BlueprintPure, Category = "游戏|摄像机", meta = (WorldContext = "WorldContextObject"))
+	static FVector GetCameraLocation(const UObject* WorldContextObject);
+	
+	//获取当前激活的摄像机的旋转，包括编辑器下
+	UFUNCTION(BlueprintPure, Category = "游戏|摄像机", meta = (WorldContext = "WorldContextObject"))
+	static FRotator GetCameraRotation(const UObject* WorldContextObject);
 };
